@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sqemo": {
+      "command": "npx",
+      "args": ["-y", "sqemo-mcp"]
+    }
+  }
+}
