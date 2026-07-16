@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.sqemo/sqemo",
+  "description": "Design ERDs with your team's naming standards: query/edit entities and relationships, SQL/DBML",
+  "repository": {
+    "url": "https://github.com/sqemo/sqemo-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://sqemo.com",
+  "version": "1.0.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "sqemo-mcp",
+      "version": "1.0.1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
