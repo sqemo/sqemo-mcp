@@ -3,15 +3,16 @@
 **MCP server for [Sqemo](https://sqemo.com)** — design ERDs with your team's naming standards.
 
 AI agents can query and edit entities, relationships, and domains; generate physical names
-from a shared team glossary; and import/export SQL (7 dialects) and DBML. Works with both
-local `.erd.json` files and ERDs stored on the Sqemo cloud.
+from a shared team glossary; import/export SQL (7 dialects) and DBML; and compare the model
+against a live database. Works with both local `.erd.json` files and ERDs stored on the
+Sqemo cloud.
 
 - npm: [`sqemo-mcp`](https://www.npmjs.com/package/sqemo-mcp)
 - Official MCP Registry: `io.github.sqemo/sqemo`
 - Web app: [app.sqemo.com](https://app.sqemo.com)
 
-> Requires Node.js >= 22. Local-file tools work without any account or configuration —
-> login is only needed for cloud ERD tools.
+> Requires Node.js >= 22. Local-file tools work without any account or configuration.
+> Login is needed for cloud ERD tools, and for the tools marked (Pro) below.
 
 ## Installation
 
@@ -42,7 +43,7 @@ Add the same `mcpServers` entry to your config file:
 }
 ```
 
-## Login (only for cloud ERDs)
+## Login (cloud ERDs and Pro tools)
 
 ```bash
 npx sqemo-mcp login    # email + password → stores a refresh token
@@ -54,7 +55,9 @@ your password is never persisted.
 
 ## What you can do
 
-### Read (16 tools)
+36 tools in total.
+
+### Read (17 tools)
 
 | Tool | Description |
 |------|-------------|
@@ -70,7 +73,19 @@ your password is never persisted.
 | `export_dbml` | DBML text |
 | `validate_erd` / `lint_erd` | Structural validation and full lint (naming drift, referential integrity, duplicates) |
 | `diff_erds` | Diff two sources (files, cloud ERDs, or raw SQL/DBML text) — dry-run before imports |
+| `export_alter_sql` | Migration (ALTER) script from the physical diff against a baseline — renames stay renames via stable IDs, destructive changes come commented out (Pro) |
 | `list_proposals` | Glossary proposal queue status (login required) |
+
+### Live database (2 tools)
+
+Read-only against your own database. Both query only the information schema —
+never table data — and the connection URL is used by this local process only,
+never sent to Sqemo servers.
+
+| Tool | Description |
+|------|-------------|
+| `introspect_db` | Import a live PostgreSQL/MySQL schema into an existing ERD (Pro) |
+| `check_db_drift` | Check a live database or a schema dump against the ERD's physical model — missing/extra tables and columns, PK/FK/NOT NULL mismatches (Pro) |
 
 ### Write (17 tools)
 
@@ -92,7 +107,7 @@ version CAS with 3-way auto-merge for concurrent edits.
 
 ## CLI for CI pipelines
 
-Two offline, file-based subcommands (no login needed):
+Offline, file-based subcommands (no login needed):
 
 ```bash
 # Naming-standard check — exits 1 on violations, great as a CI gate
@@ -103,10 +118,20 @@ npx sqemo-mcp export schema.erd.json --format sql --dialect postgres > schema.sq
 npx sqemo-mcp export schema.erd.json --format dbml > schema.dbml
 ```
 
+Drift mode compares the model against a real database or a dump, and exits 1 when
+they disagree (Pro, requires login):
+
+```bash
+npx sqemo-mcp lint schema.erd.json --db "$DATABASE_URL" [--db-schema public] [--strict]
+npx sqemo-mcp lint schema.erd.json --schema dump.sql --dialect postgres
+npx sqemo-mcp lint --erd <cloud-erd-id> --db "$DATABASE_URL" --ignore 'tmp_*'
+```
+
 GitHub Actions example:
 
 ```yaml
 - run: npx sqemo-mcp lint schema.erd.json
+- run: npx sqemo-mcp lint schema.erd.json --db "${{ secrets.DATABASE_URL }}"
 ```
 
 ## Environment variables
@@ -130,6 +155,8 @@ All tool errors return `{ code, message }` — e.g. `not_authenticated`, `no_per
 ## Links
 
 - [Sqemo](https://sqemo.com) — team naming standards + ERD design in the browser
+- [Live database guide](https://sqemo.com/docs/live-database) — drift checks in CI, step by step
+- [Plans](https://sqemo.com/pricing) — which tools need Pro
 - [sqemo-mcp on npm](https://www.npmjs.com/package/sqemo-mcp)
 - Feedback and bug reports: [issues](https://github.com/sqemo/sqemo-mcp/issues) or hello@sqemo.com
 
